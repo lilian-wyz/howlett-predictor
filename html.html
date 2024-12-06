@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Predict Basis</title>
+    <style>
+        /* styles.css 内容 */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f7f7f7;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            width: 400px;
+        }
+
+        input, select, button {
+            width: 100%;
+            margin: 10px 0;
+            padding: 10px;
+            font-size: 16px;
+        }
+
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        #result {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Predict Basis Value</h1>
+        <form id="predict-form">
+            <label for="date">Enter a Date (YYYY-MM-DD):</label>
+            <input type="text" id="date" placeholder="YYYY-MM-DD" required>
+            <label for="model">Select a Model:</label>
+            <select id="model" required>
+                <option value="LinearRegression">Linear Regression</option>
+                <option value="RandomForest">Random Forest</option>
+                <option value="XGBoost">XGBoost</option>
+                <option value="AdaBoost">AdaBoost</option>
+                <option value="SARIMA">SARIMA</option>
+            </select>
+            <button type="submit">Predict</button>
+        </form>
+        <div id="result">
+            <h2>Prediction Result:</h2>
+            <p id="output">N/A</p>
+        </div>
+    </div>
+
+    <script>
+        // app.js 内容
+        document.getElementById('predict-form').addEventListener('submit', async function(event) {
+            event.preventDefault(); // 防止表单提交刷新页面
+
+            // 获取用户输入的日期和选择的模型
+            const date = document.getElementById('date').value;
+            const model = document.getElementById('model').value;
+            const output = document.getElementById('output');
+
+            // 验证日期格式是否正确
+            const datePattern = /^\d{4}-\d{2}-\d{2}$/; // 正则表达式检查 YYYY-MM-DD 格式
+            if (!datePattern.test(date)) {
+                output.textContent = 'Invalid date format. Please use YYYY-MM-DD.';
+                return;
+            }
+
+            try {
+                // 使用 Fetch API 将数据发送到后端
+                const response = await fetch('/predict', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ date, model }) // 将日期和模型作为 JSON 数据发送
+                });
+
+                // 解析后端返回的 JSON 响应
+                const data = await response.json();
+                if (data.error) {
+                    // 如果后端返回错误信息，显示错误
+                    output.textContent = `Error: ${data.error}`;
+                } else {
+                    // 显示预测结果
+                    output.textContent = `Predicted Basis: ${data.prediction}`;
+                }
+            } catch (error) {
+                // 捕获网络或其他错误
+                output.textContent = 'Error fetching prediction.';
+                console.error(error);
+            }
+        });
+    </script>
+</body>
+</html>
